@@ -1,3 +1,5 @@
+import modal from './modal';
+
 export const bookAuthors = (authors) => {
     if (!authors) return '';
     if (authors.length <= 2) {
@@ -10,4 +12,6 @@ export const bookAuthors = (authors) => {
         authors += lastAuthor;
     };
     return authors;
-}
+};
+
+export const Modal = modal;

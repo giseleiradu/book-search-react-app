@@ -1,11 +1,13 @@
 import React, {useState} from 'react';
 import axios from 'axios';
 
-import { bookAuthors } from './utils/index';
+import { bookAuthors, Modal } from './utils/index';
 import './App.css';
 
 
 const App = () =>{
+
+
     const [searchTerm, setSearchTerm] = useState('');
     const onInputChange = (e) =>{
         setSearchTerm(e.target.value);
@@ -13,8 +15,10 @@ const App = () =>{
     let API_URL = `https://www.googleapis.com/books/v1/volumes`;
     
     const [books, setBooks] = useState({ items: []});
+    const [currentBook, setCurrentBook] =useState({});
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [modal, setModal] = useState(false);
 
     const fetchBooks = async() => {
         // set loading Before API operation starts
@@ -23,7 +27,6 @@ const App = () =>{
         try {
         // Ajax call to API using Axios
           const result = await axios.get(`${API_URL}?q=${searchTerm}`);
-          console.log(result.data);
           setBooks(result.data);
         }
         catch(error) {
@@ -31,6 +34,14 @@ const App = () =>{
         }
         // After API operation end
         setLoading(false);
+    }
+
+    const openModalHandler = () =>{
+        setModal(true);
+    }
+
+    const closeModalHandler =() =>{
+        setModal(false);
     }
 
     const onSubmitHandler =(e)=>{
@@ -63,12 +74,22 @@ const App = () =>{
             {
                 loading && <div style={{color: `green`}}>fetching books for "<strong>{searchTerm}</strong>"</div>
             }
-            <div class="flex-container">
+            <div className="flex-container back-drop">
                 {
                     books.items.map((book, index)=>{
                         return(
                             <div key={index}>
-                                <div>
+                                { modal ? <div onClick={ closeModalHandler} >
+                                            </div>
+                                        : 
+                                            null 
+                                }
+                                <div 
+                                    className="open-modal-btn"
+                                    onClick={() =>{
+                                        setCurrentBook(book);
+                                        openModalHandler();
+                                    }}>
                                     <img
                                         alt={`${book.volumeInfo.title} book`}
                                         src={`http://books.google.com/books/content?id=${
@@ -83,10 +104,27 @@ const App = () =>{
                                     </div>
                                 </div>
                             </div>
+
                         );
                     })
                 }
             </div>
+            <Modal
+                className="modal"
+                show={modal}
+                close={closeModalHandler}
+                header = {<h3>More Book Information</h3>}
+                >
+                <img
+                    alt={`${currentBook.volumeInfo? currentBook.volumeInfo.title:''} book`}
+                    src={currentBook.volumeInfo? currentBook.volumeInfo.thumbnail:''}
+                    />
+                    <h3>{currentBook.volumeInfo ? currentBook.volumeInfo.title : ''}</h3>
+                    <h4>{currentBook.volumeInfo ? currentBook.volumeInfo.authors : ''}</h4>
+                    <p>{currentBook.volumeInfo ? currentBook.volumeInfo.publisher : ''}</p>
+                    <p>{currentBook.volumeInfo ? currentBook.volumeInfo.publishedDate : ''}</p>
+
+             </Modal>
         </section>
     );
 };
